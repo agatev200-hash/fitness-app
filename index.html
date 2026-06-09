@@ -10,6 +10,60 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fitness">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAx5Q5JeOBMUWUivv5pQpeKttlKDMg1XOI",
+  authDomain: "fitness-app-12d8b.firebaseapp.com",
+  projectId: "fitness-app-12d8b",
+  storageBucket: "fitness-app-12d8b.firebasestorage.app",
+  messagingSenderId: "278640086876",
+  appId: "1:278640086876:web:526063859ec256430abb99"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const USER_ID = 'atanas';
+
+// Override storage functions to use Firestore
+async function fbGet(key) {
+  try {
+    const snap = await getDoc(doc(db, 'data', key));
+    return snap.exists() ? snap.data().value : null;
+  } catch { return null; }
+}
+
+async function fbSet(key, value) {
+  try {
+    await setDoc(doc(db, 'data', key), { value });
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch { localStorage.setItem(key, JSON.stringify(value)); }
+}
+
+// Sync from Firestore on load, then re-render
+async function syncFromCloud() {
+  const keys = ['wd', 'nd', 'fooddb', 'diary'];
+  for (const k of keys) {
+    const val = await fbGet(k);
+    if (val !== null) localStorage.setItem(k, JSON.stringify(val));
+  }
+  // Re-render active tab after sync
+  if (window._activeTabRef) switchTab(window._activeTabRef);
+}
+
+// Patch ss() to also write to Firestore
+const _origSS = window.ss;
+window._fbSet = fbSet;
+
+window.addEventListener('load', () => {
+  syncFromCloud();
+});
+
+// Export to window so inline scripts can use
+window._fbSyncKeys = async (key, value) => { await fbSet(key, value); };
+</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
@@ -398,7 +452,10 @@ const TARGETS = { calories: 2800, protein: 200, carbs: 250, fat: 78 };
 
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 const gs = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
-const ss = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const ss = (k, v) => {
+  localStorage.setItem(k, JSON.stringify(v));
+  if (window._fbSyncKeys) window._fbSyncKeys(k, v);
+};
 const getWD = () => gs('wd') || {};
 const setWD = v => ss('wd', v);
 const getND = () => gs('nd') || {};
@@ -1271,6 +1328,7 @@ function renderDiary() {
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 function switchTab(tab) {
   activeTab = tab;
+  window._activeTabRef = tab;
   ['workout','nutrition','history','progress','diary'].forEach(t => {
     document.getElementById('page-'+t).classList.toggle('hidden', t !== tab);
   });
@@ -1290,6 +1348,7 @@ document.getElementById('today-str').textContent =
   d.toLocaleDateString('bg-BG', {weekday:'long'}) + '\n' +
   d.toLocaleDateString('bg-BG', {day:'numeric', month:'long'});
 
+window._activeTabRef = 'workout';
 renderWorkout();
 
 if ('serviceWorker' in navigator) {
