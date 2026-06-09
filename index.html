@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fitness Tracker — Атанас</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d0d0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fitness">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: #0d0d0f;
+  color: #e8e6e1;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* Layout */
+.app { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
+.px { padding-left: 16px; padding-right: 16px; }
+.hidden { display: none !important; }
+
+/* Cards */
+.card {
+  background: #161618;
+  border: 1px solid #2a2a2e;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* Typography */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8a838;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+.dim { color: #666; }
+.muted { color: #999; }
+
+/* Buttons */
+.btn-primary {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, #e8a838 0%, #c8861e 100%);
+  color: #0d0d0f;
+  font-weight: 800;
+  font-size: 15px;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 24px;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease;
+  box-shadow: 0 4px 20px rgba(232,168,56,0.3), 0 1px 4px rgba(0,0,0,0.5);
+  letter-spacing: -0.01em;
+}
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-ghost {
+  background: #1e1e22;
+  border: 1px solid #333;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-ghost:active { transform: scale(0.96); background: #262629; }
+
+/* Inputs */
+input[type="number"],
+input[type="text"],
+input[type="date"] {
+  background: #111113;
+  border: 1px solid #2a2a2e;
+  border-radius: 10px;
+  color: #e8e6e1;
+  padding: 11px 12px;
+  width: 100%;
+  font-size: 15px;
+  -webkit-appearance: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input:focus {
+  outline: none;
+  border-color: #e8a838;
+  box-shadow: 0 0 0 3px rgba(232,168,56,0.12);
+}
+input::placeholder { color: #444; }
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* Day tabs */
+.day-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+.day-tabs::-webkit-scrollbar { display: none; }
+.day-tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #2a2a2e;
+  background: #1a1a1e;
+  color: #666;
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+}
+.day-tab.active {
+  background: linear-gradient(135deg, #e8a838, #c8861e);
+  color: #0d0d0f;
+  border-color: transparent;
+  box-shadow: 0 3px 14px rgba(232,168,56,0.35);
+}
+
+/* Exercise block */
+.ex-block {
+  background: #161618;
+  border: 1px solid #2a2a2e;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.ex-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e8e6e1;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.last-info {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 10px;
+}
+.last-info span { color: #888; }
+
+/* Set row */
+.set-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 24px;
+  gap: 7px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.set-num {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: #1e1e22;
+  border: 1px solid #2e2e33;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #555;
+}
+.set-icon { font-size: 15px; text-align: center; line-height: 1; }
+
+.set-input-green { border-color: rgba(52,199,89,0.45) !important; background: rgba(52,199,89,0.06) !important; }
+.set-input-red   { border-color: rgba(255,69,58,0.45) !important;  background: rgba(255,69,58,0.06) !important; }
+.set-input-yellow{ border-color: rgba(255,214,10,0.3) !important;  background: rgba(255,214,10,0.04) !important; }
+
+.pr-badge {
+  background: linear-gradient(135deg, #e8a838, #c8861e);
+  color: #0d0d0f;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* Col headers for sets */
+.set-header {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 24px;
+  gap: 7px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #444;
+}
+
+/* Macro bars */
+.macro-bar-wrap { margin-bottom: 10px; }
+.macro-bar-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: #666; margin-bottom: 4px;
+}
+.macro-bar-row span { color: #aaa; font-weight: 600; }
+.macro-bar {
+  height: 5px; border-radius: 3px;
+  background: #1e1e22; overflow: hidden;
+}
+.macro-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Stat boxes */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0;
+  text-align: center;
+}
+.stat-box { padding: 4px 0; }
+.stat-val { font-size: 20px; font-weight: 800; line-height: 1.1; }
+.stat-lbl { font-size: 10px; color: #555; margin-top: 2px; }
+
+/* History entry */
+.hist-entry {
+  background: #161618;
+  border: 1px solid #2a2a2e;
+  border-radius: 12px;
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.hist-entry:active { border-color: #3a3a40; }
+
+/* Progress entry */
+.prog-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.prog-row.latest {
+  background: rgba(232,168,56,0.07);
+  border: 1px solid rgba(232,168,56,0.2);
+}
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  max-width: 480px; margin: 0 auto;
+  background: rgba(13,13,15,0.97);
+  border-top: 1px solid #1e1e22;
+  display: flex;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 100;
+}
+.nav-btn {
+  flex: 1; padding: 10px 0 12px;
+  text-align: center;
+  font-size: 10px; font-weight: 700;
+  color: #444;
+  cursor: pointer;
+  transition: color 0.2s;
+  border: none; background: none;
+  border-top: 2px solid transparent;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.nav-btn.active { color: #e8a838; border-top-color: #e8a838; }
+.nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+/* Header */
+.hdr { padding: 28px 16px 8px; }
+.hdr h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; }
+.hdr .sub { font-size: 13px; color: #555; margin-top: 2px; }
+
+/* Flex utils */
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-center { display: flex; align-items: center; }
+.gap-2 { gap: 8px; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="hdr">
+    <div class="flex-between">
+      <h1>Fitness Tracker</h1>
+      <div id="today-str" style="font-size:12px; color:#555; text-align:right; line-height:1.4;"></div>
+    </div>
+    <div class="sub">Атанас Гатев</div>
+  </div>
+
+  <div id="page-workout" class="px"></div>
+  <div id="page-nutrition" class="px hidden"></div>
+  <div id="page-history" class="px hidden"></div>
+  <div id="page-progress" class="px hidden"></div>
+  <div id="page-diary" class="px hidden"></div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-tab="workout" onclick="switchTab('workout')">
+    <span class="nav-icon">💪</span>Тренировка
+  </button>
+  <button class="nav-btn" data-tab="nutrition" onclick="switchTab('nutrition')">
+    <span class="nav-icon">🥗</span>Хранене
+  </button>
+  <button class="nav-btn" data-tab="history" onclick="switchTab('history')">
+    <span class="nav-icon">📋</span>История
+  </button>
+  <button class="nav-btn" data-tab="progress" onclick="switchTab('progress')">
+    <span class="nav-icon">🏆</span>Рекорди
+  </button>
+  <button class="nav-btn" data-tab="diary" onclick="switchTab('diary')">
+    <span class="nav-icon">📅</span>Дневник
+  </button>
+</nav>
+
+<script>
+// ─── PROGRAM DATA ─────────────────────────────────────────────────────────────
+const PROGRAM = [
+  {
+    name: "Ден 1 — Push", sub: "Рамена акцент", icon: "🔥", key: "d1",
+    exercises: [
+      { name: "Military press с лост", sets: 3, base: true },
+      { name: "Кофички", sets: 3, base: true },
+      { name: "Машина за гърда", sets: 3 },
+      { name: "Флайс на машина (д4)", sets: 3 },
+      { name: "Странично повдигане с кабел", sets: 2 },
+      { name: "Skull crusher (д4)", sets: 2 },
+      { name: "Екстензия за трицепс", sets: 2 },
+    ]
+  },
+  {
+    name: "Ден 2 — Pull", sub: "Гръб акцент", icon: "💪", key: "d2",
+    exercises: [
+      { name: "Набирания нормален хват", sets: 3, base: true },
+      { name: "Гребане на машина", sets: 3 },
+      { name: "Гребане с дъмбел", sets: 3 },
+      { name: "Дърпане с кабел за задно рамо", sets: 2 },
+      { name: "Сгъване с дъмбел седнало", sets: 2 },
+      { name: "Корем", sets: 2 },
+    ]
+  },
+  {
+    name: "Ден 3 — Legs", sub: "Крака", icon: "🦵", key: "d3",
+    exercises: [
+      { name: "Клек с лост зад гърба", sets: 3, base: true },
+      { name: "Румънска тяга", sets: 3, base: true },
+      { name: "Български клек", sets: 3 },
+      { name: "Екстензия за предно бедро", sets: 3 },
+      { name: "Екстензия за задно бедро", sets: 3 },
+    ]
+  },
+  {
+    name: "Ден 4 — Push", sub: "Гърди акцент", icon: "⚡", key: "d4",
+    exercises: [
+      { name: "Горна лежанка 30°", sets: 3, base: true },
+      { name: "Дъмбели над глава седнало", sets: 3, base: true },
+      { name: "Машина за горна гърда", sets: 3 },
+      { name: "Флайс на машина", sets: 3 },
+      { name: "Странично повдигане с дъмбел", sets: 2 },
+      { name: "Skull crusher", sets: 2 },
+      { name: "Бутане с прав лост", sets: 2 },
+    ]
+  },
+  {
+    name: "Ден 5 — Pull", sub: "Гръб акцент", icon: "🔁", key: "d5",
+    exercises: [
+      { name: "Гребане с лост", sets: 3, base: true },
+      { name: "Дърпане на скрипец удобен хват", sets: 3 },
+      { name: "Дърпане с две ръце седнало", sets: 3 },
+      { name: "Дърпане с кабел за задно рамо (д5)", sets: 2 },
+      { name: "Сгъване с кабел", sets: 2 },
+      { name: "Сгъване с въже / чукове", sets: 2 },
+      { name: "Корем (д5)", sets: 2 },
+    ]
+  }
+];
+
+const TARGETS = { calories: 2800, protein: 200, carbs: 250, fat: 78 };
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+const gs = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const ss = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const getWD = () => gs('wd') || {};
+const setWD = v => ss('wd', v);
+const getND = () => gs('nd') || {};
+const setND = v => ss('nd', v);
+const today = () => new Date().toISOString().slice(0,10);
+
+// ─── DIARY DATA ───────────────────────────────────────────────────────────────
+const CALORIE_BASELINE = 2800;
+const PROTEIN_GOAL = 200;
+
+function getDiaryData() { return gs('diary') || {}; }
+function saveDiaryData(d) { ss('diary', d); }
+
+function getDiaryDay(dateStr) {
+  const d = getDiaryData();
+  return d[dateStr] || { fitness: false, cardio: false, sleep8: false, proteinGoal: false, calorieGoal: false };
+}
+
+function toggleDiaryHabit(dateStr, habit) {
+  const d = getDiaryData();
+  if (!d[dateStr]) d[dateStr] = { fitness: false, cardio: false, sleep8: false, proteinGoal: false, calorieGoal: false };
+  d[dateStr][habit] = !d[dateStr][habit];
+  saveDiaryData(d);
+  renderDiary();
+}
+
+function getLastSession(dayKey) {
+  const d = getWD();
+  const entries = Object.entries(d)
+    .filter(([,v]) => v.dayKey === dayKey)
+    .sort((a,b) => b[0].localeCompare(a[0]));
+  return entries[0]?.[1] ?? null;
+}
+
+function getPR(exName) {
+  let best = null;
+  for (const s of Object.values(getWD())) {
+    for (const set of (s.exercises?.[exName] || [])) {
+      if (!set.kg || !set.reps) continue;
+      const v = parseFloat(set.kg) * parseInt(set.reps);
+      if (!best || v > best.v) best = { kg: set.kg, reps: set.reps, v };
+    }
+  }
+  return best;
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let activeDay = 0;
+let workoutDate = today();
+let session = {};   // exName -> [{kg,reps}]
+let activeTab = 'workout';
+
+// ─── WORKOUT ──────────────────────────────────────────────────────────────────
+function renderWorkout() {
+  const day = PROGRAM[activeDay];
+  const last = getLastSession(day.key);
+
+  // Init session sets from last session defaults
+  for (const ex of day.exercises) {
+    if (ex.base) {
+      if (!session[ex.name]) {
+        session[ex.name] = Array.from({length: ex.sets}, () => ({ kg: '', reps: '' }));
+      }
+    } else {
+      if (session[ex.name] === undefined) {
+        session[ex.name] = false; // checkbox state
+      }
+    }
+  }
+
+  let h = '';
+
+  // Day tabs
+  h += '<div class="day-tabs">';
+  for (let i = 0; i < PROGRAM.length; i++) {
+    const d = PROGRAM[i];
+    h += `<button class="day-tab${i===activeDay?' active':''}" onclick="selectDay(${i})">Д${i+1} ${d.icon}</button>`;
+  }
+  h += '</div>';
+
+  // Day header card
+  h += `<div class="card" style="margin-bottom:14px;">
+    <div class="flex-between" style="margin-bottom:12px;">
+      <div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:-0.02em;">${day.name}</div>
+        <div style="font-size:13px;color:#666;margin-top:2px;">${day.sub}</div>
+        ${last ? `<div style="font-size:11px;color:#444;margin-top:3px;">Последна: ${last.date}</div>` : '<div style="font-size:11px;color:#444;margin-top:3px;">Първа тренировка</div>'}
+      </div>
+      <div style="font-size:36px;line-height:1;">${day.icon}</div>
+    </div>
+    <input type="date" id="wd-date" value="${workoutDate}" onchange="workoutDate=this.value" style="font-size:13px;padding:9px 12px;">
+  </div>`;
+
+  // Exercises
+  for (const ex of day.exercises) {
+    if (ex.base) {
+      // BASE exercise: КГ/РЕП inputs per set
+      const prev = last?.exercises?.[ex.name] || [];
+      const pr = getPR(ex.name);
+      const sets = session[ex.name];
+
+      h += `<div class="ex-block">
+        <div class="flex-between gap-2" style="margin-bottom:8px;">
+          <div class="ex-name">⭐ ${ex.name}</div>
+          ${pr ? `<div class="pr-badge">PR ${pr.kg}×${pr.reps}</div>` : ''}
+        </div>`;
+
+      if (prev.length) {
+        h += `<div class="last-info">Минала: ${prev.map(s => s.kg ? `<span>${s.kg}кг×${s.reps}</span>` : '').filter(Boolean).join(' · ') || '—'}</div>`;
+      } else {
+        h += `<div class="last-info">Няма предишни данни</div>`;
+      }
+
+      h += `<div class="set-header"><div></div><div>КГ</div><div>РЕП</div><div></div></div>`;
+
+      for (let si = 0; si < sets.length; si++) {
+        const s = sets[si];
+        const p = prev[si];
+        let cls = '';
+        let icon = '';
+        if (p && s.kg && s.reps) {
+          const cv = parseFloat(s.kg) * parseInt(s.reps);
+          const pv = parseFloat(p.kg||0) * parseInt(p.reps||0);
+          if (cv > pv) { cls = 'set-input-green'; icon = '🟢'; }
+          else if (cv < pv) { cls = 'set-input-red'; icon = '🔴'; }
+          else { cls = 'set-input-yellow'; icon = '🟡'; }
+        }
+        h += `<div class="set-row">
+          <div class="set-num">${si+1}</div>
+          <input type="number" inputmode="decimal" class="${cls}" placeholder="${p?.kg || '—'}" value="${s.kg}"
+            onchange="updSet('${ex.name}',${si},'kg',this.value)" onblur="updSet('${ex.name}',${si},'kg',this.value)">
+          <input type="number" inputmode="numeric" class="${cls}" placeholder="${p?.reps || '—'}" value="${s.reps}"
+            onchange="updSet('${ex.name}',${si},'reps',this.value)" onblur="updSet('${ex.name}',${si},'reps',this.value)">
+          <div class="set-icon">${icon}</div>
+        </div>`;
+      }
+
+      h += `</div>`;
+
+    } else {
+      // NON-BASE exercise: checkbox only
+      const done = session[ex.name] === true;
+      h += `<div class="ex-block" style="padding:12px 14px;" onclick="toggleCheck('${ex.name.replace(/'/g,"\\'")}')">
+        <div style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+          <div style="width:26px;height:26px;border-radius:8px;border:2px solid ${done?'#e8a838':'#333'};background:${done?'#e8a838':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;">
+            ${done ? '<span style="color:#0d0d0f;font-size:14px;font-weight:900;">✓</span>' : ''}
+          </div>
+          <div class="ex-name" style="margin-bottom:0;color:${done?'#666':'#e8e6e1'};text-decoration:${done?'line-through':'none'};transition:all 0.2s;">${ex.name}</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  h += `<button class="btn-primary" style="margin-top:8px;margin-bottom:16px;" onclick="saveWorkout()">Запази тренировката ✓</button>`;
+
+  document.getElementById('page-workout').innerHTML = h;
+}
+
+function selectDay(i) {
+  activeDay = i;
+  session = {};
+  renderWorkout();
+}
+
+function updSet(exName, si, field, val) {
+  if (!Array.isArray(session[exName])) return;
+  session[exName][si][field] = val;
+  renderWorkout();
+}
+
+function toggleCheck(exName) {
+  session[exName] = !session[exName];
+  renderWorkout();
+}
+
+function saveWorkout() {
+  const day = PROGRAM[activeDay];
+  const d = getWD();
+  const exData = {};
+  for (const ex of day.exercises) {
+    if (ex.base) {
+      exData[ex.name] = (session[ex.name] || []).map(s => ({ kg: s.kg, reps: s.reps }));
+    } else {
+      exData[ex.name] = session[ex.name] === true ? 'done' : '';
+    }
+  }
+  d[workoutDate + '_' + day.key] = { dayKey: day.key, date: workoutDate, isoDate: today(), exercises: exData };
+  setWD(d);
+
+  const btn = document.querySelector('#page-workout .btn-primary');
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ Запазено!';
+    btn.style.background = 'linear-gradient(135deg,#34c759,#28a745)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2200);
+  }
+}
+
+// ─── FOOD DATABASE ────────────────────────────────────────────────────────────
+// Per 100g: { kcal, protein, carbs, fat }
+const BUILT_IN_FOODS = [
+  // Месо — на 100г (USDA FoodData Central)
+  { name: "Пилешки гърди (сурови)", kcal: 106, protein: 22.5, carbs: 0, fat: 1.9 },
+  { name: "Пилешки гърди (варени)", kcal: 165, protein: 31.0, carbs: 0, fat: 3.6 },
+  { name: "Пилешко бедро (сурово)", kcal: 177, protein: 18.3, carbs: 0, fat: 11.3 },
+  { name: "Пилешко бедро (варено)", kcal: 209, protein: 23.9, carbs: 0, fat: 12.4 },
+  { name: "Говеждо кайма 90/10 (сурово)", kcal: 185, protein: 18.2, carbs: 0, fat: 12.8 },
+  { name: "Говеждо кайма 80/20 (сурово)", kcal: 254, protein: 17.2, carbs: 0, fat: 20.0 },
+  { name: "Говеждо пържола (сурово)", kcal: 144, protein: 21.4, carbs: 0, fat: 6.0 },
+  { name: "Свинско каре (сурово)", kcal: 143, protein: 21.3, carbs: 0, fat: 6.0 },
+  { name: "Свинско бут (сурово)", kcal: 136, protein: 20.9, carbs: 0, fat: 5.4 },
+  // Риба и морски — на 100г (USDA)
+  { name: "Сьомга атлантическа (сурова)", kcal: 203, protein: 20.3, carbs: 0, fat: 13.1 },
+  { name: "Риба тон консерва (в собствен сок)", kcal: 109, protein: 25.5, carbs: 0, fat: 0.5 },
+  { name: "Риба тон консерва (в олио)", kcal: 198, protein: 23.6, carbs: 0, fat: 11.4 },
+  { name: "Скумрия (сурова)", kcal: 205, protein: 18.6, carbs: 0, fat: 13.9 },
+  { name: "Скариди (сурови)", kcal: 85, protein: 18.0, carbs: 0.9, fat: 0.5 },
+  { name: "Треска (сурова)", kcal: 82, protein: 17.8, carbs: 0, fat: 0.7 },
+  // Яйца — на 100г (USDA)
+  { name: "Яйце цяло (сурово)", kcal: 143, protein: 12.6, carbs: 0.7, fat: 9.5 },
+  { name: "Яйце 1 брой (50г)", kcal: 72, protein: 6.3, carbs: 0.4, fat: 4.8 },
+  { name: "Яйчен белтък (суров)", kcal: 52, protein: 10.9, carbs: 0.7, fat: 0.2 },
+  { name: "Яйчен жълтък (суров)", kcal: 322, protein: 15.9, carbs: 3.6, fat: 26.5 },
+  // Млечни — на 100г (USDA)
+  { name: "Извара (0% мазнини)", kcal: 72, protein: 12.4, carbs: 3.4, fat: 0.3 },
+  { name: "Извара (4% мазнини)", kcal: 98, protein: 11.1, carbs: 3.4, fat: 4.3 },
+  { name: "Гръцко кисело мляко (0%)", kcal: 59, protein: 10.3, carbs: 3.6, fat: 0.4 },
+  { name: "Гръцко кисело мляко (2%)", kcal: 73, protein: 9.9, carbs: 3.6, fat: 1.9 },
+  { name: "Кисело мляко (3.6%)", kcal: 61, protein: 3.5, carbs: 4.7, fat: 3.3 },
+  { name: "Краве мляко (3.2%)", kcal: 61, protein: 3.2, carbs: 4.8, fat: 3.2 },
+  { name: "Краве мляко (1.5%)", kcal: 46, protein: 3.4, carbs: 4.8, fat: 1.5 },
+  { name: "Сирене бяло (краве)", kcal: 272, protein: 17.4, carbs: 2.7, fat: 21.3 },
+  { name: "Кашкавал (краве)", kcal: 371, protein: 25.2, carbs: 1.3, fat: 29.5 },
+  // Зърнени и нишестени — на 100г (USDA)
+  { name: "Ориз бял (варен)", kcal: 130, protein: 2.7, carbs: 28.0, fat: 0.3 },
+  { name: "Ориз бял (суров)", kcal: 359, protein: 7.0, carbs: 80.3, fat: 1.0 },
+  { name: "Ориз кафяв (варен)", kcal: 122, protein: 2.6, carbs: 25.6, fat: 0.9 },
+  { name: "Овесени ядки (сухи)", kcal: 389, protein: 13.2, carbs: 69.9, fat: 6.3 },
+  { name: "Хляб пълнозърнест", kcal: 252, protein: 10.7, carbs: 43.1, fat: 3.5 },
+  { name: "Хляб бял", kcal: 266, protein: 8.9, carbs: 50.6, fat: 3.2 },
+  { name: "Паста (варена)", kcal: 158, protein: 5.8, carbs: 30.9, fat: 0.9 },
+  { name: "Паста (сурова)", kcal: 371, protein: 13.0, carbs: 74.7, fat: 1.5 },
+  { name: "Картофи (варени)", kcal: 87, protein: 1.9, carbs: 20.1, fat: 0.1 },
+  { name: "Батат сладък картоф (варен)", kcal: 86, protein: 1.6, carbs: 20.1, fat: 0.1 },
+  { name: "Царевица зърна (варена)", kcal: 96, protein: 3.4, carbs: 21.0, fat: 1.5 },
+  { name: "Леща (варена)", kcal: 116, protein: 9.0, carbs: 20.1, fat: 0.4 },
+  { name: "Нахут (варен)", kcal: 164, protein: 8.9, carbs: 27.4, fat: 2.6 },
+  // Зеленчуци — на 100г (USDA)
+  { name: "Броколи (суров)", kcal: 34, protein: 2.8, carbs: 6.6, fat: 0.4 },
+  { name: "Спанак (суров)", kcal: 23, protein: 2.9, carbs: 3.6, fat: 0.4 },
+  { name: "Домат", kcal: 18, protein: 0.9, carbs: 3.9, fat: 0.2 },
+  { name: "Краставица", kcal: 15, protein: 0.7, carbs: 3.6, fat: 0.1 },
+  { name: "Морков", kcal: 41, protein: 0.9, carbs: 9.6, fat: 0.2 },
+  { name: "Чушка червена", kcal: 31, protein: 1.0, carbs: 6.0, fat: 0.3 },
+  { name: "Лук", kcal: 40, protein: 1.1, carbs: 9.3, fat: 0.1 },
+  { name: "Зеле (сурово)", kcal: 25, protein: 1.3, carbs: 5.8, fat: 0.1 },
+  { name: "Тиквички (сурови)", kcal: 17, protein: 1.2, carbs: 3.1, fat: 0.3 },
+  { name: "Гъби шампиньони", kcal: 22, protein: 3.1, carbs: 3.3, fat: 0.3 },
+  // Плодове — на 100г (USDA)
+  { name: "Банан", kcal: 85, protein: 0.7, carbs: 20.1, fat: 0.2 },
+  { name: "Ябълка", kcal: 52, protein: 0.3, carbs: 13.8, fat: 0.2 },
+  { name: "Портокал", kcal: 47, protein: 0.9, carbs: 11.8, fat: 0.1 },
+  { name: "Ягоди", kcal: 32, protein: 0.7, carbs: 7.7, fat: 0.3 },
+  { name: "Грозде", kcal: 67, protein: 0.6, carbs: 17.2, fat: 0.4 },
+  { name: "Диня", kcal: 30, protein: 0.6, carbs: 7.6, fat: 0.2 },
+  { name: "Праскова", kcal: 39, protein: 0.9, carbs: 9.5, fat: 0.3 },
+  { name: "Манго", kcal: 60, protein: 0.8, carbs: 14.9, fat: 0.4 },
+  { name: "Боровинки", kcal: 57, protein: 0.7, carbs: 14.5, fat: 0.3 },
+  // Ядки и мазнини — на 100г (USDA)
+  { name: "Бадеми", kcal: 575, protein: 21.2, carbs: 21.6, fat: 49.4 },
+  { name: "Орехи", kcal: 654, protein: 15.2, carbs: 13.7, fat: 65.2 },
+  { name: "Кашу", kcal: 553, protein: 18.2, carbs: 30.2, fat: 43.9 },
+  { name: "Фъстъчено масло (натурално)", kcal: 598, protein: 22.2, carbs: 21.6, fat: 51.4 },
+  { name: "Авокадо", kcal: 160, protein: 2.0, carbs: 8.5, fat: 14.7 },
+  { name: "Зехтин екстра върджин", kcal: 884, protein: 0, carbs: 0, fat: 100.0 },
+  { name: "Масло (несолено)", kcal: 717, protein: 0.9, carbs: 0.1, fat: 81.1 },
+  // Суплементи — на 100г
+  { name: "Суроватъчен протеин (на прах)", kcal: 376, protein: 79.0, carbs: 6.0, fat: 4.5 },
+  { name: "Казеин протеин (на прах)", kcal: 372, protein: 76.0, carbs: 8.0, fat: 3.5 },
+  { name: "Протеинов бар (среден)", kcal: 198, protein: 21.0, carbs: 20.0, fat: 6.5 },
+];
+
+function getFoodDB() {
+  const custom = gs('fooddb') || [];
+  return [...BUILT_IN_FOODS, ...custom];
+}
+
+function addCustomFood(food) {
+  const custom = gs('fooddb') || [];
+  custom.push(food);
+  ss('fooddb', custom);
+}
+
+// ─── NUTRITION STATE ──────────────────────────────────────────────────────────
+let nutSearchQuery = '';
+let nutShowAddForm = false;
+let nutSelectedFood = null; // { food, grams }
+
+function getTodayLog() {
+  const all = getND();
+  return all[today()]?.log || [];
+}
+
+function saveTodayLog(log) {
+  const all = getND();
+  if (!all[today()]) all[today()] = {};
+  all[today()].log = log;
+  // Recalculate totals
+  const totals = log.reduce((acc, e) => {
+    const m = e.grams / 100;
+    acc.calories += Math.round(e.food.kcal * m);
+    acc.protein  += Math.round(e.food.protein * m * 10) / 10;
+    acc.carbs    += Math.round(e.food.carbs * m * 10) / 10;
+    acc.fat      += Math.round(e.food.fat * m * 10) / 10;
+    return acc;
+  }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  all[today()].calories = totals.calories;
+  all[today()].protein  = totals.protein;
+  all[today()].carbs    = totals.carbs;
+  all[today()].fat      = totals.fat;
+  setND(all);
+}
+
+// ─── NUTRITION ────────────────────────────────────────────────────────────────
+function renderNutrition() {
+  const all = getND();
+  const td = all[today()] || {};
+  const log = td.log || [];
+  const totals = { calories: td.calories||0, protein: td.protein||0, carbs: td.carbs||0, fat: td.fat||0 };
+
+  let h = '';
+
+  // ── Daily progress ──
+  h += `<div class="section-label" style="margin-top:4px;">Прогрес днес</div>`;
+  h += `<div class="card">
+    <div class="stat-grid" style="margin-bottom:14px;">
+      <div class="stat-box">
+        <div class="stat-val" style="color:#e8a838;">${totals.calories}</div>
+        <div class="stat-lbl">/ ${TARGETS.calories} kcal</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:#5ac8fa;">${totals.protein}г</div>
+        <div class="stat-lbl">/ ${TARGETS.protein}г P</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:#bf5af2;">${totals.carbs}г</div>
+        <div class="stat-lbl">/ ${TARGETS.carbs}г C</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" style="color:#ff9f0a;">${totals.fat}г</div>
+        <div class="stat-lbl">/ ${TARGETS.fat}г F</div>
+      </div>
+    </div>
+    <div class="macro-bar-wrap">
+      <div class="macro-bar-row">Калории <span style="color:${totals.calories/TARGETS.calories>1.05?'#ff453a':totals.calories/TARGETS.calories>0.88?'#34c759':'#e8a838'}">${totals.calories} / ${TARGETS.calories}</span></div>
+      <div class="macro-bar"><div class="macro-fill" style="width:${Math.min(100,(totals.calories/TARGETS.calories)*100)}%;background:#e8a838;"></div></div>
+    </div>
+    <div class="macro-bar-wrap">
+      <div class="macro-bar-row">Протеин <span style="color:#5ac8fa;">${totals.protein}г / ${TARGETS.protein}г</span></div>
+      <div class="macro-bar"><div class="macro-fill" style="width:${Math.min(100,(totals.protein/TARGETS.protein)*100)}%;background:#5ac8fa;"></div></div>
+    </div>
+    <div class="macro-bar-wrap">
+      <div class="macro-bar-row">Въглехидрати <span style="color:#bf5af2;">${totals.carbs}г / ${TARGETS.carbs}г</span></div>
+      <div class="macro-bar"><div class="macro-fill" style="width:${Math.min(100,(totals.carbs/TARGETS.carbs)*100)}%;background:#bf5af2;"></div></div>
+    </div>
+    <div class="macro-bar-wrap" style="margin-bottom:0;">
+      <div class="macro-bar-row">Мазнини <span style="color:#ff9f0a;">${totals.fat}г / ${TARGETS.fat}г</span></div>
+      <div class="macro-bar"><div class="macro-fill" style="width:${Math.min(100,(totals.fat/TARGETS.fat)*100)}%;background:#ff9f0a;"></div></div>
+    </div>
+  </div>`;
+
+  // ── Today's food log ──
+  h += `<div class="section-label">Изядено днес</div>`;
+  if (log.length) {
+    h += `<div style="margin-bottom:12px;">`;
+    for (let i = 0; i < log.length; i++) {
+      const e = log[i];
+      const m = e.grams / 100;
+      const kcal = Math.round(e.food.kcal * m);
+      const prot = Math.round(e.food.protein * m * 10) / 10;
+      h += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#161618;border:1px solid #2a2a2e;border-radius:12px;margin-bottom:7px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.food.name}</div>
+          <div style="font-size:11px;color:#555;margin-top:2px;">${e.grams}г · ${kcal} kcal · ${prot}г П</div>
+        </div>
+        <button onclick="removeLogEntry(${i})" style="background:none;border:none;color:#444;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:6px;flex-shrink:0;" title="Премахни">×</button>
+      </div>`;
+    }
+    h += `</div>`;
+  } else {
+    h += `<div style="color:#444;font-size:13px;text-align:center;padding:16px 0 20px;">Добави храни по-долу</div>`;
+  }
+
+  // ── Search & add food ──
+  h += `<div class="section-label">Добави храна</div>`;
+  h += `<div class="card" style="margin-bottom:10px;">
+    <input type="text" id="food-search" placeholder="Търси храна... (напр. пиле, ориз)"
+      oninput="nutSearchQuery=this.value;renderFoodResults()" style="margin-bottom:0;">
+    <div id="food-results"></div>
+  </div>`;
+
+  // ── Selected food: enter grams ──
+  if (nutSelectedFood) {
+    const f = nutSelectedFood;
+    const grams = document.getElementById('food-grams')?.value || 100;
+    const m = parseFloat(grams) / 100;
+    h += `<div class="card" style="border-color:rgba(232,168,56,0.3);margin-bottom:10px;">
+      <div style="font-size:15px;font-weight:800;margin-bottom:4px;">${f.name}</div>
+      <div style="font-size:12px;color:#555;margin-bottom:12px;">на 100г: ${f.kcal} kcal · П:${f.protein}г · В:${f.carbs}г · М:${f.fat}г</div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:6px;">ГРАМАЖ (г)</div>
+        <input type="number" inputmode="numeric" id="food-grams" value="100" min="1"
+          oninput="renderNutritionGramsPreview(this.value)" style="font-size:18px;font-weight:700;">
+      </div>
+      <div id="grams-preview" style="display:flex;gap:12px;margin-bottom:14px;padding:10px;background:#111113;border-radius:10px;text-align:center;">
+        <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#e8a838;">${Math.round(f.kcal)}</div><div style="font-size:10px;color:#555;">kcal</div></div>
+        <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#5ac8fa;">${f.protein}г</div><div style="font-size:10px;color:#555;">протеин</div></div>
+        <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#bf5af2;">${f.carbs}г</div><div style="font-size:10px;color:#555;">въглехи.</div></div>
+        <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#ff9f0a;">${f.fat}г</div><div style="font-size:10px;color:#555;">мазнини</div></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" onclick="addFoodToLog()" style="flex:1;">Добави ✓</button>
+        <button class="btn-ghost" onclick="nutSelectedFood=null;renderNutrition()">Отказ</button>
+      </div>
+    </div>`;
+  }
+
+  // ── Add custom food form ──
+  if (nutShowAddForm) {
+    h += `<div class="card" style="border-color:rgba(232,168,56,0.2);margin-bottom:10px;">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px;color:#e8a838;">Нова храна (на 100г)</div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:6px;">НАЗВАНИЕ</div>
+        <input type="text" id="cf-name" placeholder="напр. Протеинов пудинг">
+      </div>
+      <div class="grid-2" style="margin-bottom:12px;">
+        <div>
+          <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:6px;">КАЛОРИИ (kcal)</div>
+          <input type="number" inputmode="numeric" id="cf-kcal" placeholder="0">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:6px;">ПРОТЕИН (г)</div>
+          <input type="number" inputmode="numeric" id="cf-prot" placeholder="0">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:6px;">ВЪГЛЕХИДРАТИ (г)</div>
+          <input type="number" inputmode="numeric" id="cf-carbs" placeholder="0">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:6px;">МАЗНИНИ (г)</div>
+          <input type="number" inputmode="numeric" id="cf-fat" placeholder="0">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" onclick="saveCustomFood()" style="flex:1;">Запази в базата ✓</button>
+        <button class="btn-ghost" onclick="nutShowAddForm=false;renderNutrition()">Отказ</button>
+      </div>
+    </div>`;
+  }
+
+  if (!nutShowAddForm && !nutSelectedFood) {
+    h += `<div style="text-align:center;padding:8px 0 4px;">
+      <span style="font-size:12px;color:#444;cursor:pointer;" onclick="nutShowAddForm=true;renderNutrition()">+ Добави нова храна в базата данни</span>
+    </div>`;
+  }
+
+  // ── History last 7 days ──
+  const hist = Object.entries(all).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
+  if (hist.length) {
+    h += `<div class="section-label" style="margin-top:4px;">Последни 7 дни</div>`;
+    for (const [date, nd] of hist) {
+      const pct = nd.calories ? (nd.calories/TARGETS.calories)*100 : 0;
+      const icon = pct > 105 ? '🔴' : pct > 88 ? '🟢' : '🟡';
+      h += `<div class="hist-entry" style="cursor:default;">
+        <div class="flex-between">
+          <div style="font-size:13px;font-weight:700;">${date}</div>
+          <div style="font-size:13px;">${icon} <span style="color:#e8a838;font-weight:700;">${nd.calories||0} kcal</span></div>
+        </div>
+        <div style="font-size:12px;color:#555;margin-top:4px;">P: ${nd.protein||0}г · C: ${nd.carbs||0}г · F: ${nd.fat||0}г</div>
+      </div>`;
+    }
+  }
+
+  document.getElementById('page-nutrition').innerHTML = h;
+  // Restore search value and results without triggering full re-render
+  const searchEl = document.getElementById('food-search');
+  if (searchEl) { searchEl.value = nutSearchQuery; }
+  renderFoodResults();
+}
+
+function renderFoodResults() {
+  const el = document.getElementById('food-results');
+  if (!el) return;
+  const q = nutSearchQuery.trim().toLowerCase();
+  if (!q) { el.innerHTML = ''; return; }
+  const db = getFoodDB();
+  const results = db.filter(f => f.name.toLowerCase().includes(q)).slice(0, 8);
+  let h = '<div style="margin-top:10px;">';
+  if (results.length) {
+    for (const food of results) {
+      h += `<div onclick="selectFood(${JSON.stringify(food).replace(/"/g,'&quot;')})"
+        style="padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:4px;background:#111113;border:1px solid #2a2a2e;">
+        <div style="font-size:13px;font-weight:700;">${food.name}</div>
+        <div style="font-size:11px;color:#555;margin-top:2px;">${food.kcal} kcal · П:${food.protein}г · В:${food.carbs}г · М:${food.fat}г <span style="color:#444;">на 100г</span></div>
+      </div>`;
+    }
+  } else {
+    h += `<div style="color:#555;font-size:13px;padding:8px 0;">Не е намерено. <span style="color:#e8a838;cursor:pointer;" onclick="nutShowAddForm=true;renderNutrition()">+ Добави нова храна</span></div>`;
+  }
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function selectFood(food) {
+  nutSelectedFood = food;
+  nutSearchQuery = '';
+  renderNutrition();
+  setTimeout(() => { document.getElementById('food-grams')?.focus(); }, 50);
+}
+
+function renderNutritionGramsPreview(grams) {
+  if (!nutSelectedFood) return;
+  const f = nutSelectedFood;
+  const m = parseFloat(grams) / 100;
+  const el = document.getElementById('grams-preview');
+  if (!el) return;
+  el.innerHTML = `
+    <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#e8a838;">${Math.round(f.kcal*m)}</div><div style="font-size:10px;color:#555;">kcal</div></div>
+    <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#5ac8fa;">${Math.round(f.protein*m*10)/10}г</div><div style="font-size:10px;color:#555;">протеин</div></div>
+    <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#bf5af2;">${Math.round(f.carbs*m*10)/10}г</div><div style="font-size:10px;color:#555;">въглехи.</div></div>
+    <div style="flex:1;"><div style="font-size:16px;font-weight:800;color:#ff9f0a;">${Math.round(f.fat*m*10)/10}г</div><div style="font-size:10px;color:#555;">мазнини</div></div>`;
+}
+
+function addFoodToLog() {
+  const grams = parseFloat(document.getElementById('food-grams')?.value) || 100;
+  const log = getTodayLog();
+  log.push({ food: nutSelectedFood, grams });
+  saveTodayLog(log);
+  nutSelectedFood = null;
+  nutSearchQuery = '';
+  renderNutrition();
+}
+
+function removeLogEntry(i) {
+  const log = getTodayLog();
+  log.splice(i, 1);
+  saveTodayLog(log);
+  renderNutrition();
+}
+
+function saveCustomFood() {
+  const name  = document.getElementById('cf-name')?.value?.trim();
+  const kcal  = parseFloat(document.getElementById('cf-kcal')?.value) || 0;
+  const prot  = parseFloat(document.getElementById('cf-prot')?.value) || 0;
+  const carbs = parseFloat(document.getElementById('cf-carbs')?.value) || 0;
+  const fat   = parseFloat(document.getElementById('cf-fat')?.value) || 0;
+  if (!name) return;
+  const food = { name, kcal, protein: prot, carbs, fat };
+  addCustomFood(food);
+  nutShowAddForm = false;
+  nutSelectedFood = food;
+  renderNutrition();
+}
+
+function saveNutrition() { /* legacy — kept for compatibility */ }
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+function renderHistory() {
+  const data = getWD();
+  const nd = getND();
+  const entries = Object.entries(data).sort((a,b)=>b[0].localeCompare(a[0]));
+
+  // Nutrition chart — last 30 days with data
+  const nutDays = Object.entries(nd)
+    .filter(([,v]) => v.totals)
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .slice(-30);
+
+  let h = `<div class="section-label" style="margin-top:4px;">Калории — история</div>`;
+
+  if (nutDays.length === 0) {
+    h += `<div style="color:#444;text-align:center;padding:24px 0 8px;font-size:13px;">Все още няма записано хранене</div>`;
+  } else {
+    const maxKcal = Math.max(CALORIE_BASELINE * 1.3, ...nutDays.map(([,v]) => v.totals.kcal));
+    const chartH = 120;
+    const barW = Math.max(14, Math.floor(320 / nutDays.length) - 3);
+    const baselineY = chartH - Math.round((CALORIE_BASELINE / maxKcal) * chartH);
+
+    let bars = '';
+    for (const [dateStr, v] of nutDays) {
+      const kcal = v.totals.kcal || 0;
+      const barH = Math.max(2, Math.round((kcal / maxKcal) * chartH));
+      const isOver = kcal > CALORIE_BASELINE;
+      const color = isOver ? '#ff453a' : '#30d158';
+      const shortDate = dateStr.slice(5); // MM-DD
+      bars += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="font-size:9px;color:#555;height:14px;line-height:14px;">${kcal > 0 ? Math.round(kcal) : ''}</div>
+        <div style="width:${barW}px;height:${chartH}px;display:flex;align-items:flex-end;position:relative;">
+          <div style="width:100%;height:${barH}px;background:${color};border-radius:3px 3px 0 0;opacity:0.85;"></div>
+        </div>
+        <div style="font-size:9px;color:#444;writing-mode:vertical-rl;transform:rotate(180deg);height:28px;overflow:hidden;">${shortDate}</div>
+      </div>`;
+    }
+
+    h += `<div style="background:#111;border-radius:12px;padding:12px;margin-bottom:16px;overflow-x:auto;">
+      <div style="position:relative;margin-bottom:4px;">
+        <div style="display:flex;align-items:flex-end;gap:3px;position:relative;min-width:max-content;">
+          ${bars}
+        </div>
+        <div style="position:absolute;top:${baselineY - chartH - 14}px;left:0;right:0;border-top:1px dashed #e8a838;pointer-events:none;"></div>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:6px;font-size:11px;">
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:#30d158;border-radius:2px;"></div>Под ${CALORIE_BASELINE} kcal</div>
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:#ff453a;border-radius:2px;"></div>Над ${CALORIE_BASELINE} kcal</div>
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:20px;height:1px;border-top:1px dashed #e8a838;"></div>Baseline</div>
+      </div>
+    </div>`;
+  }
+
+  h += `<div class="section-label">Минали тренировки</div>`;
+
+  if (!entries.length) {
+    h += `<div style="color:#444;text-align:center;padding:24px 0;font-size:14px;">Все още няма записани тренировки</div>`;
+    document.getElementById('page-history').innerHTML = h;
+    return;
+  }
+
+  for (const [key, s] of entries.slice(0, 40)) {
+    const day = PROGRAM.find(d => d.key === s.dayKey);
+    const baseEx = day?.exercises.filter(e => e.base) || [];
+    h += `<div class="hist-entry" onclick="toggleHist('${key}')">
+      <div class="flex-between">
+        <div>
+          <div style="font-size:14px;font-weight:700;">${s.date}</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">${day?.name || s.dayKey}</div>
+        </div>
+        <div style="color:#444;font-size:18px;" id="arr-${key}">›</div>
+      </div>
+      <div id="det-${key}" class="hidden" style="margin-top:10px;border-top:1px solid #222;padding-top:10px;">
+        ${baseEx.map(ex => {
+          const sets = s.exercises?.[ex.name] || [];
+          const filled = sets.filter(st => st.kg);
+          return `<div style="margin-bottom:7px;">
+            <div style="font-size:11px;color:#e8a838;font-weight:700;margin-bottom:3px;">⭐ ${ex.name}</div>
+            <div style="font-size:13px;color:#888;">${filled.map((st,i)=>`С${i+1}: ${st.kg}кг×${st.reps}`).join(' · ')||'—'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('page-history').innerHTML = h;
+}
+
+function toggleHist(key) {
+  const el = document.getElementById('det-' + key);
+  const arr = document.getElementById('arr-' + key);
+  if (!el) return;
+  const open = !el.classList.contains('hidden');
+  el.classList.toggle('hidden');
+  if (arr) arr.textContent = open ? '›' : '⌄';
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────────────────────────
+function renderProgress() {
+  const data = getWD();
+  let h = `<div class="section-label" style="margin-top:4px;">Базови упражнения — прогрес</div>`;
+
+  const allBase = [];
+  for (const day of PROGRAM) {
+    for (const ex of day.exercises) {
+      if (ex.base) allBase.push({ ...ex, dayLabel: day.name.split('—')[1]?.trim() || day.name });
+    }
+  }
+
+  for (const ex of allBase) {
+    const sessions = Object.entries(data)
+      .filter(([,s]) => s.exercises?.[ex.name])
+      .sort((a,b) => a[1].date.localeCompare(b[1].date))
+      .map(([,s]) => ({
+        date: s.date,
+        topKg: Math.max(...(s.exercises[ex.name].map(st => parseFloat(st.kg||0)))),
+        topReps: s.exercises[ex.name].reduce((b,st) => {
+          const v = parseFloat(st.kg||0)*parseInt(st.reps||0);
+          return v > (b.v||0) ? {kg:st.kg,reps:st.reps,v} : b;
+        }, {})
+      }));
+
+    const pr = getPR(ex.name);
+    const last = sessions[sessions.length-1];
+    const prev = sessions[sessions.length-2];
+    let trend = '';
+    if (last && prev) {
+      const lv = last.topReps.v||0, pv = prev.topReps.v||0;
+      trend = lv > pv ? '📈' : lv < pv ? '📉' : '➡️';
+    }
+
+    const recent = sessions.slice(-5);
+
+    h += `<div class="ex-block" style="margin-bottom:10px;">
+      <div class="flex-between gap-2" style="margin-bottom:6px;">
+        <div style="font-size:14px;font-weight:700;line-height:1.3;">${ex.name}</div>
+        ${pr ? `<div class="pr-badge">PR ${pr.kg}×${pr.reps}</div>` : ''}
+      </div>
+      <div style="font-size:11px;color:#555;margin-bottom:8px;">${ex.dayLabel} ${trend}</div>`;
+
+    if (!recent.length) {
+      h += `<div style="font-size:13px;color:#444;">Няма данни</div>`;
+    } else {
+      for (let i = 0; i < recent.length; i++) {
+        const r = recent[i];
+        const isLatest = i === recent.length - 1;
+        const prev2 = recent[i-1];
+        let rowIcon = '';
+        if (prev2 && r.topReps.v && prev2.topReps.v) {
+          rowIcon = r.topReps.v > prev2.topReps.v ? '🟢' : r.topReps.v < prev2.topReps.v ? '🔴' : '🟡';
+        }
+        h += `<div class="prog-row${isLatest?' latest':''}">
+          <div style="color:${isLatest?'#e8a838':'#555'};font-size:12px;font-weight:${isLatest?'700':'400'};">${isLatest?'▶ ':''}${r.date}</div>
+          <div style="color:${isLatest?'#e8e6e1':'#777'};font-size:13px;font-weight:${isLatest?'700':'400'};">
+            ${r.topReps.kg ? `${r.topReps.kg}кг × ${r.topReps.reps}` : '—'} ${rowIcon}
+          </div>
+        </div>`;
+      }
+    }
+
+    h += `</div>`;
+  }
+
+  document.getElementById('page-progress').innerHTML = h;
+}
+
+// ─── DIARY ────────────────────────────────────────────────────────────────────
+function renderDiary() {
+  const diaryData = getDiaryData();
+  const nd = getND();
+  const wdData = getWD();
+
+  // Build last 30 days
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  const HABITS = [
+    { key: 'calorieGoal', label: `Калории\n<${CALORIE_BASELINE}`, icon: '🔥', auto: true },
+    { key: 'proteinGoal', label: `Протеин\n>${PROTEIN_GOAL}г`, icon: '💊', auto: true },
+    { key: 'fitness',     label: 'Фитнес',    icon: '🏋️', auto: false },
+    { key: 'cardio',      label: 'Кардио',    icon: '🏃', auto: false },
+    { key: 'sleep8',      label: 'Сън 8ч',    icon: '😴', auto: false },
+  ];
+
+  // Today row — manual toggle + auto-fill from data
+  const todayStr = today();
+  const todayNut = nd[todayStr]?.totals;
+  const todayDiary = getDiaryDay(todayStr);
+
+  // Auto-derive calorie and protein from nutrition log
+  const autoCalorie = todayNut ? todayNut.kcal < CALORIE_BASELINE : null;
+  const autoProtein = todayNut ? todayNut.protein >= PROTEIN_GOAL : null;
+
+  // Check if trained today (any workout saved today)
+  const trainedToday = Object.values(wdData).some(s => s.isoDate === todayStr || s.date === new Date().toLocaleDateString('bg-BG'));
+
+  let h = `<div class="section-label" style="margin-top:4px;">Дневник на навиците</div>`;
+
+  // Today card
+  h += `<div style="background:#111;border-radius:12px;padding:14px;margin-bottom:16px;">
+    <div style="font-size:13px;font-weight:700;color:#e8a838;margin-bottom:10px;">Днес — отбележи</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">`;
+
+  for (const habit of HABITS) {
+    let checked;
+    if (habit.key === 'calorieGoal') checked = autoCalorie !== null ? autoCalorie : todayDiary.calorieGoal;
+    else if (habit.key === 'proteinGoal') checked = autoProtein !== null ? autoProtein : todayDiary.proteinGoal;
+    else if (habit.key === 'fitness') checked = trainedToday || todayDiary.fitness;
+    else checked = todayDiary[habit.key];
+
+    const isAuto = (habit.key === 'calorieGoal' && autoCalorie !== null) ||
+                   (habit.key === 'proteinGoal' && autoProtein !== null) ||
+                   (habit.key === 'fitness' && trainedToday);
+
+    h += `<div onclick="${isAuto ? '' : `toggleDiaryHabit('${todayStr}','${habit.key}')`}"
+      style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;
+             background:${checked ? '#1c2e1c' : '#1a1a1a'};border-radius:10px;
+             border:1px solid ${checked ? '#30d158' : '#2a2a2a'};cursor:${isAuto ? 'default' : 'pointer'};">
+      <div style="font-size:18px;">${habit.icon}</div>
+      <div style="font-size:9px;color:#666;text-align:center;line-height:1.3;white-space:pre-line;">${habit.label}</div>
+      <div style="font-size:16px;">${checked ? '✅' : '⬜'}</div>
+      ${isAuto ? `<div style="font-size:8px;color:#e8a838;">авто</div>` : ''}
+    </div>`;
+  }
+
+  h += `</div></div>`;
+
+  // History table
+  h += `<div style="background:#111;border-radius:12px;padding:12px;overflow-x:auto;">
+    <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:10px;">Последните 30 дни</div>
+    <table style="width:100%;border-collapse:collapse;min-width:320px;">
+      <thead>
+        <tr>
+          <th style="text-align:left;font-size:10px;color:#555;font-weight:600;padding:4px 6px 8px;">Дата</th>
+          ${HABITS.map(h => `<th style="text-align:center;font-size:18px;padding:4px 4px 8px;" title="${h.label}">${h.icon}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>`;
+
+  // Show days in reverse (newest first), skip days with no data
+  const daysWithData = days.filter(dateStr => {
+    const diary = diaryData[dateStr];
+    const nut = nd[dateStr]?.totals;
+    const trained = Object.values(wdData).some(s => s.isoDate === dateStr);
+    return diary || nut || trained;
+  }).reverse();
+
+  if (!daysWithData.length) {
+    h += `<tr><td colspan="6" style="text-align:center;color:#444;font-size:13px;padding:20px;">Няма данни все още</td></tr>`;
+  } else {
+    for (const dateStr of daysWithData) {
+      const diary = diaryData[dateStr] || {};
+      const nut = nd[dateStr]?.totals;
+      const trained = Object.values(wdData).some(s => s.isoDate === dateStr);
+      const isToday = dateStr === todayStr;
+
+      const calCheck  = nut ? nut.kcal < CALORIE_BASELINE  : !!diary.calorieGoal;
+      const protCheck = nut ? nut.protein >= PROTEIN_GOAL  : !!diary.proteinGoal;
+      const fitCheck  = trained || !!diary.fitness;
+      const cardioCheck = !!diary.cardio;
+      const sleepCheck  = !!diary.sleep8;
+
+      const checks = [calCheck, protCheck, fitCheck, cardioCheck, sleepCheck];
+      const score = checks.filter(Boolean).length;
+
+      const d = new Date(dateStr + 'T00:00:00');
+      const label = isToday ? 'Днес' : d.toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' });
+
+      h += `<tr style="border-top:1px solid #1e1e1e;${isToday ? 'background:#161616;' : ''}">
+        <td style="font-size:12px;color:${isToday ? '#e8a838' : '#666'};font-weight:${isToday ? '700' : '400'};padding:7px 6px;white-space:nowrap;">${label}</td>
+        ${checks.map((c, i) => {
+          const habit = HABITS[i];
+          const isAutoCol = (habit.key === 'calorieGoal' && nut) || (habit.key === 'proteinGoal' && nut) || (habit.key === 'fitness' && trained);
+          const clickable = !isAutoCol && isToday;
+          return `<td style="text-align:center;font-size:15px;padding:7px 4px;cursor:${clickable ? 'pointer' : 'default'};"
+            onclick="${clickable ? `toggleDiaryHabit('${dateStr}','${habit.key}')` : ''}">
+            ${c ? '✅' : '<span style="color:#2a2a2a;font-size:13px;">○</span>'}
+          </td>`;
+        }).join('')}
+      </tr>`;
+    }
+  }
+
+  h += `</tbody></table>`;
+
+  // Score legend
+  h += `<div style="margin-top:10px;font-size:10px;color:#444;display:flex;gap:12px;flex-wrap:wrap;">
+    <span>🔥 Калории &lt;${CALORIE_BASELINE}</span>
+    <span>💊 Протеин &gt;${PROTEIN_GOAL}г</span>
+    <span>🏋️ Фитнес</span>
+    <span>🏃 Кардио</span>
+    <span>😴 Сън 8ч</span>
+  </div>`;
+
+  h += `</div>`;
+
+  document.getElementById('page-diary').innerHTML = h;
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  ['workout','nutrition','history','progress','diary'].forEach(t => {
+    document.getElementById('page-'+t).classList.toggle('hidden', t !== tab);
+  });
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  if (tab === 'workout')   renderWorkout();
+  if (tab === 'nutrition') renderNutrition();
+  if (tab === 'history')   renderHistory();
+  if (tab === 'progress')  renderProgress();
+  if (tab === 'diary')     renderDiary();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+const d = new Date();
+document.getElementById('today-str').textContent =
+  d.toLocaleDateString('bg-BG', {weekday:'long'}) + '\n' +
+  d.toLocaleDateString('bg-BG', {day:'numeric', month:'long'});
+
+renderWorkout();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
