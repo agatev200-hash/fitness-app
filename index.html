@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAx5Q5JeOBMUWUivv5pQpeKttlKDMg1XOI",
@@ -25,9 +25,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const USER_ID = 'atanas';
 
-// Override storage functions to use Firestore
 async function fbGet(key) {
   try {
     const snap = await getDoc(doc(db, 'data', key));
@@ -38,30 +36,26 @@ async function fbGet(key) {
 async function fbSet(key, value) {
   try {
     await setDoc(doc(db, 'data', key), { value });
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch { localStorage.setItem(key, JSON.stringify(value)); }
+  } catch {}
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
-// Sync from Firestore on load, then re-render
-async function syncFromCloud() {
+// Called by main script after app is fully initialized
+window._syncFromCloud = async function() {
   const keys = ['wd', 'nd', 'fooddb', 'diary'];
+  let changed = false;
   for (const k of keys) {
     const val = await fbGet(k);
-    if (val !== null) localStorage.setItem(k, JSON.stringify(val));
+    if (val !== null) {
+      localStorage.setItem(k, JSON.stringify(val));
+      changed = true;
+    }
   }
-  // Re-render active tab after sync
-  if (window._activeTabRef) switchTab(window._activeTabRef);
-}
+  if (changed && window.switchTab && window._activeTabRef) {
+    window.switchTab(window._activeTabRef);
+  }
+};
 
-// Patch ss() to also write to Firestore
-const _origSS = window.ss;
-window._fbSet = fbSet;
-
-window.addEventListener('load', () => {
-  syncFromCloud();
-});
-
-// Export to window so inline scripts can use
 window._fbSyncKeys = async (key, value) => { await fbSet(key, value); };
 </script>
 <style>
@@ -1329,6 +1323,7 @@ function renderDiary() {
 function switchTab(tab) {
   activeTab = tab;
   window._activeTabRef = tab;
+  window.switchTab = switchTab;
   ['workout','nutrition','history','progress','diary'].forEach(t => {
     document.getElementById('page-'+t).classList.toggle('hidden', t !== tab);
   });
@@ -1349,10 +1344,20 @@ document.getElementById('today-str').textContent =
   d.toLocaleDateString('bg-BG', {day:'numeric', month:'long'});
 
 window._activeTabRef = 'workout';
+window.switchTab = switchTab;
 renderWorkout();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Pull data from Firebase after app is ready
+if (window._syncFromCloud) {
+  window._syncFromCloud();
+} else {
+  window.addEventListener('load', () => {
+    if (window._syncFromCloud) window._syncFromCloud();
+  });
 }
 </script>
 </body>
